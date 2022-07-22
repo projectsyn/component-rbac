@@ -1,0 +1,4 @@
+parameters:
+  rbac:
+    =_metadata: {}
+    namespace: syn-rbac
