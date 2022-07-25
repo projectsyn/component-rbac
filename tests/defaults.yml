@@ -1,3 +1,50 @@
-# Overwrite parameters here
-
-# parameters: {...}
+parameters:
+  rbac:
+    serviceaccounts:
+      bar:
+        metadata:
+          namespace: foo
+          labels:
+            foo: "false"
+    clusterroles:
+      raw:
+        rules:
+          - apiGroups:
+              - ""
+            resources:
+              - namespaces
+            verbs:
+              - create
+    clusterrolebindings:
+      raw:
+        roleRef:
+          apiGroup: rbac.authorization.k8s.io
+          kind: ClusterRole
+          name: raw
+        subjects:
+          - kind: ServiceAccount
+            name: bar
+            namespace: foo
+    roles:
+      raw:
+        metadata:
+          namespace: foo
+        rules:
+          - apiGroups:
+              - ""
+            resources:
+              - configmaps
+            verbs:
+              - create
+    rolebindings:
+      raw:
+        roleRef:
+          apiGroup: rbac.authorization.k8s.io
+          kind: Role
+          name: raw
+        metadata:
+          namespace: foo
+        subjects:
+          - kind: ServiceAccount
+            name: bar
+            namespace: foo

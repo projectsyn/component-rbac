@@ -2,3 +2,8 @@ parameters:
   rbac:
     =_metadata: {}
     namespace: syn-rbac
+    serviceaccounts: {}
+    clusterroles: {}
+    clusterrolebindings: {}
+    roles: {}
+    rolebinding: {}
