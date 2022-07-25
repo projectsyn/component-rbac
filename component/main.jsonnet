@@ -13,8 +13,20 @@ local namespacedName(name, namespace='') = {
   name: if std.length(namespacedName) > 1 then namespacedName[1] else namespacedName[0],
 };
 
-{
 
+local processRole(r) = r {
+  local extraRules = std.objectValues(
+    com.getValueOrDefault(r, 'rules_', {})
+  ),
+  rules_:: null,
+  rules+: [ {
+    apiGroups: com.renderArray(rule.apiGroups),
+    resources: com.renderArray(rule.resources),
+    verbs: com.renderArray(rule.verbs),
+  } for rule in extraRules ],
+};
+
+{
   serviceaccounts: com.generateResources(
     params.serviceaccounts,
     function(name) kube.ServiceAccount(namespacedName(name).name) {
@@ -23,16 +35,22 @@ local namespacedName(name, namespace='') = {
       },
     }
   ),
-  clusterRoles: com.generateResources(params.clusterroles, kube.ClusterRole),
+  clusterRoles: [
+    processRole(cr)
+    for cr in com.generateResources(params.clusterroles, kube.ClusterRole)
+  ],
   clusterRoleBindings: com.generateResources(params.clusterrolebindings, function(name) kube._Object('rbac.authorization.k8s.io/v1', 'ClusterRoleBinding', name)),
-  roles: com.generateResources(
-    params.roles,
-    function(name) kube.Role(namespacedName(name).name) {
-      metadata+: {
-        namespace: namespacedName(name).namespace,
-      },
-    }
-  ),
+  roles: [
+    processRole(r)
+    for r in com.generateResources(
+      params.roles,
+      function(name) kube.Role(namespacedName(name).name) {
+        metadata+: {
+          namespace: namespacedName(name).namespace,
+        },
+      }
+    )
+  ],
   roleBindings: com.generateResources(
     params.rolebindings,
     function(name) kube._Object('rbac.authorization.k8s.io/v1', 'RoleBinding', namespacedName(name).name) {

@@ -14,6 +14,16 @@ parameters:
               - namespaces
             verbs:
               - create
+      helper:
+        rules_:
+          create:
+            apiGroups:
+              - ""
+            resources:
+              - namespaces
+            verbs:
+              - create
+              - ~delete 
     clusterrolebindings:
       raw:
         roleRef:
@@ -33,6 +43,16 @@ parameters:
               - configmaps
             verbs:
               - create
+      foo/helper:
+        rules_:
+          create:
+            apiGroups:
+              - ""
+            resources:
+              - configmaps
+            verbs:
+              - create
+              - ~delete 
     rolebindings:
       foo/raw:
         roleRef:
