@@ -1,10 +1,14 @@
 parameters:
   rbac:
+    namespace: syn-serviceaccounts
+    manageNamespace: true
+
     serviceaccounts:
       foo/bar:
         metadata:
           labels:
             foo: "false"
+      buzz: {}
     clusterroles:
       raw:
         rules:

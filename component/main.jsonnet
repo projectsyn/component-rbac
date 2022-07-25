@@ -76,6 +76,7 @@ local processRoleBinding(rb) = rb {
 
 
 {
+  [if params.manageNamespace then 'namespace']: kube.Namespace(params.namespace),
   serviceaccounts: com.generateResources(
     params.serviceaccounts,
     function(name) kube.ServiceAccount(namespacedName(name).name) {
