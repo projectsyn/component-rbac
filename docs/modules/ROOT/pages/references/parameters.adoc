@@ -6,14 +6,250 @@ The parent key for all of the following parameters is `rbac`.
 
 [horizontal]
 type:: string
-default:: `syn-rbac`
+default:: `default`
 
-The namespace in which to deploy this component.
+Fallback namespace to deploy namespaced resources to.
+
+== `manageNamespace`
+
+[horizontal]
+type:: bool
+default:: false
+
+Whether to create/manage the fallback namespace.
+
+== `serviceaccounts`
+
+[horizontal]
+type:: dict
+default:: {}
+
+
+The `serviceaccounts` parameter can be used to create a list of arbitrary sevice accounts.
+
+The provided values are transformed into `ServiceAccount` resources.
+
+The keys are parsed as namespaced names `<namespace>/<name>` and used as names and namespaces of the Service Accounts.
+If no namespace is provided the Service Account is created in the fallback namespace provided in the `namespace` parameter.
+
+
+=== Example
+
+The following example config will result in a `ServiceAccount` `bar` in namespace `foo` and a Service account `buzz` in namespace `syn-sa`.
+
+[source,yaml]
+----
+rbac:
+  namespace: syn-sa
+  serviceaccounts:
+    foo/bar:
+      metadata:
+        labels:
+          foo: "true"
+    buzz:
+      metadata:
+        labels:
+          foo: "false"
+----
+
+
+== `roles` / `clusterroles`
+
+[horizontal]
+type:: dict
+default:: {}
+
+The `roles` and `clusterroles` keys generally expose the same parameters.
+The `roles` parameter can be used to create a list oI guess de bastel https://github.com/madduck/reclass/commit/05cfd74a0df98a9f37580c05de381d54a4cfe688f arbitrary roles, while the `clusterroles` parameter can create arbitrary cluster roles.
+
+The keys of the `roles` are parsed as namespaced names `<namespace>/<name>` and used as names and namespaces of the role.
+If no namespace is provided the role is created in the fallback namespace provided in the `namespace` parameter.
+The keys of the `clusterroles` are used as the name of the cluster role.
+
+The values are directly transformed into `Roles` and `ClusterRoles` resources, but can contain an additonal `rules_` field.
+The content of the `rules_` field is a dict.
+The values of this dict are added to the `rules` list and `apiGroups`, `resources`, or `verbs` that are prefixed with a tilde `~` are removed.
+
+This allows to effectively manage and overwrite roles in the configuration hierarchy.
+
+=== Example
+
+The following example config will result in:
+
+* A `ClusterRole` `ns-creator` that allows to creation of namespaces.
+* A `Role` `cm-deleter` in namespace `foo` that allows the deletion of config maps in that namespace
+* A `Role` `cm-creator` in the default namespace `syn-roles` that allows the creation of config maps.
+
+[source,yaml]
+----
+rbac:
+  namespace: syn-sa
+  clusterroles:
+    ns-creator:
+      rules_:
+        create:
+          apiGroups:
+            - ""
+          resources:
+            - namespaces
+          verbs:
+            - create
+            - ~delete <1>
+  roles:
+    foo/cm-deleter:
+      rules_:
+        delete:
+          apiGroups:
+            - ""
+          resources:
+            - configmaps
+            - ~secrets <1>
+          verbs:
+            - delete
+    cm-creator:
+        create:
+          apiGroups:
+            - ""
+          resources:
+            - configmaps
+          verbs:
+            - create
+----
+<1> The verbs and resources prefixed with a tilde `~` are removed from the resulting rule, even if they're configured higher up in the configuration hierarchy.
+
+== `rolebinding` / `clusterrolebindings`
+
+[horizontal]
+type:: dict
+default:: {}
+
+The `rolebindings` and `clusterrolebindings` keys generally expose the same parameters.
+The `rolebindings` parameter can be used to create a list of arbitrary rolebindings, while the `clusterrolebidings` parameter can create arbitrary cluster rolebindings.
+
+The keys of the `rolebindings` are parsed as namespaced names `<namespace>/<name>` and used as names and namespaces of the rolebinding.
+If no namespace is provided the rolebinding is created in the fallback namespace provided in the `namespace` parameter.
+The keys of the `clusterrolebindings` are used as the name of the cluster rolebinding.
+
+The values are directly transformed into `RoleBindings` and `ClusterRoleBindings` resources, but there are additonal helper fields to more effectively manage and overwrite rolebindings in the configuration hierarchy.
+
+The `role_` and `clusterrole_` field allow you to directly specify the role and clusterrole name respectively as a string, without having to specify `apiGroup` or `kind`.
+
+The `subjects_` field allows easier management of subjects in the rolebinding.
+The field can contain three lists: `serviceaccounts`, `users`, and `groups`.
+For each entry in the lists a corresponding subject is added to the `subjects` field of the rolebinding resource.
+For serviceaccounts you can specify a namespaced name (`namespace/name`).
+If no namespace is specified the component falls back to the rolebinding or default namespace respectively.
+Subjects can be removed from each list by prefixing them with a tilde `~`.
+
+
+=== Example
+
+The following example config will result in:
+
+* A `ClusterRoleBiding` `ns-creator` that binds the `ns-creator` cluster role to user `buzz`, group `org`, and service accounts `bar` in namespace `foo` and `creator` in namespace `syn-sa`.
+* A `RoleBinding` `cm-deleter` in namespace `foo` that binds the role `cm-deleter` in namespace `foo` to user `buzz`, group `org`, and service account `bar` in the namespace `foo`.
+* A `RoleBinding` `cm-editor` in namespace `syn-sa` that binds the cluster role `cm-editor` to user `buzz`, group `org`, and service account `buzz` in the namespace `syn-sa`.
+
+[source,yaml]
+----
+rbac:
+  namespace: syn-sa
+  clusterrolebindings:
+    ns-creator:
+      clusterRole_: ns-creator
+      subjects_:
+        serviceaccounts:
+          - foo/bar
+          - creator
+        users:
+          - buzz
+          - ~blib
+        groups:
+          - org
+          - ~root
+  rolebindings:
+    foo/cm-deleter:
+      role_: cm-deleter
+      subjects_:
+        serviceaccounts:
+          - bar
+        users:
+          - buzz
+        groups:
+          - org
+    cm-editor:
+      clusterRole_: cm-editor
+      subjects_:
+        serviceaccounts:
+          - buzz
+        users:
+          - buzz
+        groups:
+          - org
+----
+
 
 
 == Example
 
+The following complete example will:
+
+* Create and manage namespace `example-service-accounts`
+* Create a `ServiceAccount` `bar` in namespace `foo`.
+* Gives the `ServiceAccount` `bar` the permission to create namespaces
+* Gives the `ServiceAccount` `bar`, user `tim`, and group `org` the permission to manage `ConfigMaps` in namespace `foo`
+
 [source,yaml]
 ----
-namespace: example-namespace
+rbac:
+  namespace: example-service-accounts
+  manageNamespace: true
+
+  serviceaccounts:
+    foo/bar:
+      metadata:
+        labels:
+          foo: "true"
+
+  clusterroles:
+    ns-creator:
+      rules_:
+        create:
+          apiGroups:
+            - ""
+          resources:
+            - namespaces
+          verbs:
+            - create
+  clusterrolebindings:
+    ns-creator:
+      clusterRole_: ns-creator
+      subjects_:
+        serviceaccounts:
+          - foo/bar
+
+  roles:
+    foo/cm-admin:
+      rules_:
+        delete:
+          apiGroups:
+            - ""
+          resources:
+            - configmaps
+          verbs:
+            - get
+            - create
+            - update
+            - patch
+            - delete
+  rolebindings:
+    foo/cm-admin:
+      role_: cm-deleter
+      subjects_:
+        serviceaccounts:
+          - bar
+        users:
+          - tim
+        groups:
+          - org
 ----
