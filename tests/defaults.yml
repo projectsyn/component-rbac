@@ -83,7 +83,7 @@ parameters:
         role_: helper
         subjects_:
           serviceaccounts:
-            - foo/bar
+            - bar
             - ~foo/buz
           users:
             - buzz

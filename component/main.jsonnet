@@ -68,8 +68,8 @@ local processRoleBinding(rb) = rb {
     +
     [ {
       kind: 'ServiceAccount',
-      namespace: namespacedName(sa).namespace,
-      name: namespacedName(sa).name,
+      namespace: namespacedName(sa, namespace=rb.metadata.namespace).namespace,
+      name: namespacedName(sa, namespace=rb.metadata.namespace).name,
     } for sa in com.renderArray(extraSubjects.serviceaccounts) ],
 
 };
