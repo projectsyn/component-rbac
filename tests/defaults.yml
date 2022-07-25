@@ -23,7 +23,7 @@ parameters:
               - namespaces
             verbs:
               - create
-              - ~delete 
+              - ~delete
     clusterrolebindings:
       raw:
         roleRef:
@@ -35,10 +35,7 @@ parameters:
             name: bar
             namespace: foo
       helper:
-        roleRef:
-          apiGroup: rbac.authorization.k8s.io
-          kind: ClusterRole
-          name: helper
+        clusterRole_: helper
         subjects_:
           serviceaccounts:
             - foo/bar
@@ -67,7 +64,7 @@ parameters:
               - configmaps
             verbs:
               - create
-              - ~delete 
+              - ~delete
     rolebindings:
       foo/raw:
         roleRef:
@@ -79,10 +76,7 @@ parameters:
             name: bar
             namespace: foo
       foo/helper:
-        roleRef:
-          apiGroup: rbac.authorization.k8s.io
-          kind: Role
-          name: helper
+        role_: helper
         subjects_:
           serviceaccounts:
             - foo/bar
@@ -93,4 +87,3 @@ parameters:
           groups:
             - org
             - ~root
-

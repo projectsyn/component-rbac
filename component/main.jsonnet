@@ -33,6 +33,25 @@ local processRoleBinding(rb) = rb {
     groups: [],
   } + com.getValueOrDefault(rb, 'subjects_', {}),
 
+  roleRef+:
+    {
+      apiGroup: 'rbac.authorization.k8s.io',
+    }
+    +
+    if std.objectHas(rb, 'role_') && std.objectHas(rb, 'clusterRole_') then error 'cannot specify both "role_" and "clusterRole_"'
+    else if std.objectHas(rb, 'role_') then {
+      kind: 'Role',
+      name: rb.role_,
+    }
+    else if std.objectHas(rb, 'clusterRole_') then {
+      kind: 'ClusterRole',
+      name: rb.clusterRole_,
+    }
+    else {},
+
+  role_:: null,
+  clusterRole_:: null,
+
   subjects_:: null,
   subjects+:
     [ {
