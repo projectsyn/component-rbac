@@ -1,9 +1,8 @@
 parameters:
   rbac:
     serviceaccounts:
-      bar:
+      foo/bar:
         metadata:
-          namespace: foo
           labels:
             foo: "false"
     clusterroles:
@@ -26,9 +25,7 @@ parameters:
             name: bar
             namespace: foo
     roles:
-      raw:
-        metadata:
-          namespace: foo
+      foo/raw:
         rules:
           - apiGroups:
               - ""
@@ -37,13 +34,11 @@ parameters:
             verbs:
               - create
     rolebindings:
-      raw:
+      foo/raw:
         roleRef:
           apiGroup: rbac.authorization.k8s.io
           kind: Role
           name: raw
-        metadata:
-          namespace: foo
         subjects:
           - kind: ServiceAccount
             name: bar
