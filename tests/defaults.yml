@@ -34,6 +34,21 @@ parameters:
           - kind: ServiceAccount
             name: bar
             namespace: foo
+      helper:
+        roleRef:
+          apiGroup: rbac.authorization.k8s.io
+          kind: ClusterRole
+          name: helper
+        subjects_:
+          serviceaccounts:
+            - foo/bar
+            - ~foo/buz
+          users:
+            - buzz
+            - ~blib
+          groups:
+            - org
+            - ~root
     roles:
       foo/raw:
         rules:
@@ -63,3 +78,19 @@ parameters:
           - kind: ServiceAccount
             name: bar
             namespace: foo
+      foo/helper:
+        roleRef:
+          apiGroup: rbac.authorization.k8s.io
+          kind: Role
+          name: helper
+        subjects_:
+          serviceaccounts:
+            - foo/bar
+            - ~foo/buz
+          users:
+            - buzz
+            - ~blib
+          groups:
+            - org
+            - ~root
+

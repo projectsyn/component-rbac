@@ -26,6 +26,36 @@ local processRole(r) = r {
   } for rule in extraRules ],
 };
 
+local processRoleBinding(rb) = rb {
+  local extraSubjects = {
+    users: [],
+    serviceaccounts: [],
+    groups: [],
+  } + com.getValueOrDefault(rb, 'subjects_', {}),
+
+  subjects_:: null,
+  subjects+:
+    [ {
+      apiGroup: 'rbac.authorization.k8s.io',
+      kind: 'Group',
+      name: g,
+    } for g in com.renderArray(extraSubjects.groups) ]
+    +
+    [ {
+      apiGroup: 'rbac.authorization.k8s.io',
+      kind: 'User',
+      name: u,
+    } for u in com.renderArray(extraSubjects.users) ]
+    +
+    [ {
+      kind: 'ServiceAccount',
+      namespace: namespacedName(sa).namespace,
+      name: namespacedName(sa).name,
+    } for sa in com.renderArray(extraSubjects.serviceaccounts) ],
+
+};
+
+
 {
   serviceaccounts: com.generateResources(
     params.serviceaccounts,
@@ -39,7 +69,11 @@ local processRole(r) = r {
     processRole(cr)
     for cr in com.generateResources(params.clusterroles, kube.ClusterRole)
   ],
-  clusterRoleBindings: com.generateResources(params.clusterrolebindings, function(name) kube._Object('rbac.authorization.k8s.io/v1', 'ClusterRoleBinding', name)),
+  clusterRoleBindings: [
+    processRoleBinding(crb)
+    for crb in
+      com.generateResources(params.clusterrolebindings, function(name) kube._Object('rbac.authorization.k8s.io/v1', 'ClusterRoleBinding', name))
+  ],
   roles: [
     processRole(r)
     for r in com.generateResources(
@@ -51,12 +85,15 @@ local processRole(r) = r {
       }
     )
   ],
-  roleBindings: com.generateResources(
-    params.rolebindings,
-    function(name) kube._Object('rbac.authorization.k8s.io/v1', 'RoleBinding', namespacedName(name).name) {
-      metadata+: {
-        namespace: namespacedName(name).namespace,
-      },
-    }
-  ),
+  roleBindings: [
+    processRoleBinding(rb)
+    for rb in com.generateResources(
+      params.rolebindings,
+      function(name) kube._Object('rbac.authorization.k8s.io/v1', 'RoleBinding', namespacedName(name).name) {
+        metadata+: {
+          namespace: namespacedName(name).namespace,
+        },
+      }
+    )
+  ],
 }
