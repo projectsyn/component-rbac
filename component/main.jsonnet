@@ -33,6 +33,9 @@ local processRoleBinding(rb) = rb {
     groups: [],
   } + com.getValueOrDefault(rb, 'subjects_', {}),
 
+  local rbNs = com.getValueOrDefault(rb.metadata, 'namespace', ''),
+
+
   roleRef+:
     {
       apiGroup: 'rbac.authorization.k8s.io',
@@ -68,8 +71,8 @@ local processRoleBinding(rb) = rb {
     +
     [ {
       kind: 'ServiceAccount',
-      namespace: namespacedName(sa, namespace=rb.metadata.namespace).namespace,
-      name: namespacedName(sa, namespace=rb.metadata.namespace).name,
+      namespace: namespacedName(sa, namespace=rbNs).namespace,
+      name: namespacedName(sa, namespace=rbNs).name,
     } for sa in com.renderArray(extraSubjects.serviceaccounts) ],
 
 };
