@@ -75,6 +75,9 @@ The component expects that the values of fields `apiGroups`, `resources` and `ve
 
 This allows to effectively manage and overwrite roles in the configuration hierarchy.
 
+NOTE: Other provided keys, such as `metadata`, are added to the role as-is.
+This includes `rules` which added as is to the rules specified in `rules_`.
+
 === Example
 
 The following example config will result in:
@@ -110,6 +113,7 @@ rbac:
           verbs:
             - delete
     cm-creator:
+      rules_:
         create:
           apiGroups:
             - ""
@@ -144,6 +148,8 @@ For serviceaccounts you can specify a namespaced name (`namespace/name`).
 If no namespace is specified, the component falls back to the rolebinding or default namespace respectively.
 Subjects can be removed from each list by prefixing them with a tilde `~`.
 
+NOTE: Other provided keys, such as `metadata`, are added to the rolebinding as-is.
+This includes `subjects` which added as-is to the subjects specified in `subjects_`.
 
 === Example
 
