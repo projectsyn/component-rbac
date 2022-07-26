@@ -1,3 +1,93 @@
-# Overwrite parameters here
+parameters:
+  rbac:
+    namespace: syn-serviceaccounts
+    manageNamespace: true
 
-# parameters: {...}
+    serviceaccounts:
+      foo/bar:
+        metadata:
+          labels:
+            foo: "false"
+      buzz: {}
+    clusterroles:
+      raw:
+        rules:
+          - apiGroups:
+              - ""
+            resources:
+              - namespaces
+            verbs:
+              - create
+      helper:
+        rules_:
+          create:
+            apiGroups:
+              - ""
+            resources:
+              - namespaces
+            verbs:
+              - create
+              - ~delete
+    clusterrolebindings:
+      raw:
+        roleRef:
+          apiGroup: rbac.authorization.k8s.io
+          kind: ClusterRole
+          name: raw
+        subjects:
+          - kind: ServiceAccount
+            name: bar
+            namespace: foo
+      helper:
+        clusterRole_: helper
+        subjects_:
+          serviceaccounts:
+            - foo/bar
+            - ~foo/buz
+          users:
+            - buzz
+            - ~blib
+          groups:
+            - org
+            - ~root
+    roles:
+      foo/raw:
+        rules:
+          - apiGroups:
+              - ""
+            resources:
+              - configmaps
+            verbs:
+              - create
+      foo/helper:
+        rules_:
+          create:
+            apiGroups:
+              - ""
+            resources:
+              - configmaps
+            verbs:
+              - create
+              - ~delete
+    rolebindings:
+      foo/raw:
+        roleRef:
+          apiGroup: rbac.authorization.k8s.io
+          kind: Role
+          name: raw
+        subjects:
+          - kind: ServiceAccount
+            name: bar
+            namespace: foo
+      foo/helper:
+        role_: helper
+        subjects_:
+          serviceaccounts:
+            - bar
+            - ~foo/buz
+          users:
+            - buzz
+            - ~blib
+          groups:
+            - org
+            - ~root

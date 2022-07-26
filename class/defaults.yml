@@ -1,4 +1,13 @@
 parameters:
   rbac:
     =_metadata: {}
-    namespace: syn-rbac
+
+    namespace: default
+    manageNamespace: false
+
+
+    serviceaccounts: {}
+    clusterroles: {}
+    clusterrolebindings: {}
+    roles: {}
+    rolebindings: {}
