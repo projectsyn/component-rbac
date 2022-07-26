@@ -10,4 +10,4 @@ parameters:
     clusterroles: {}
     clusterrolebindings: {}
     roles: {}
-    rolebinding: {}
+    rolebindings: {}

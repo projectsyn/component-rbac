@@ -60,15 +60,18 @@ type:: dict
 default:: {}
 
 The `roles` and `clusterroles` keys generally expose the same parameters.
-The `roles` parameter can be used to create a list oI guess de bastel https://github.com/madduck/reclass/commit/05cfd74a0df98a9f37580c05de381d54a4cfe688f arbitrary roles, while the `clusterroles` parameter can create arbitrary cluster roles.
+The `roles` parameter can be used to create arbitrary roles, while the `clusterroles` parameter can create arbitrary cluster roles.
 
-The keys of the `roles` are parsed as namespaced names `<namespace>/<name>` and used as names and namespaces of the role.
+The keys of parameter `roles` are parsed as namespaced names `<namespace>/<name>` and used as names and namespaces of the role.
 If no namespace is provided the role is created in the fallback namespace provided in the `namespace` parameter.
-The keys of the `clusterroles` are used as the name of the cluster role.
+The keys of parameter `clusterroles` are used as the name of the cluster role.
 
 The values are directly transformed into `Roles` and `ClusterRoles` resources, but can contain an additonal `rules_` field.
-The content of the `rules_` field is a dict.
-The values of this dict are added to the `rules` list and `apiGroups`, `resources`, or `verbs` that are prefixed with a tilde `~` are removed.
+The content of the `rules_` field is a dict of dicts.
+The keys of the `rules_` dict are ignored by the component, but can be used in the hierarchy to edit existing rules.
+The component looks for keys `apiGroups`, `resources` and `verbs` in each value of the `rules_` dict.
+Each value is transformed into an entry of the role's `rules` list.
+The component expects that the values of fields `apiGroups`, `resources` and `verbs` are lists, and removes entries prefixed with a tilde (`~`) from the final value used for the entry in the role's `rules` list.
 
 This allows to effectively manage and overwrite roles in the configuration hierarchy.
 
@@ -117,7 +120,7 @@ rbac:
 ----
 <1> The verbs and resources prefixed with a tilde `~` are removed from the resulting rule, even if they're configured higher up in the configuration hierarchy.
 
-== `rolebinding` / `clusterrolebindings`
+== `rolebindings` / `clusterrolebindings`
 
 [horizontal]
 type:: dict
@@ -126,9 +129,9 @@ default:: {}
 The `rolebindings` and `clusterrolebindings` keys generally expose the same parameters.
 The `rolebindings` parameter can be used to create a list of arbitrary rolebindings, while the `clusterrolebidings` parameter can create arbitrary cluster rolebindings.
 
-The keys of the `rolebindings` are parsed as namespaced names `<namespace>/<name>` and used as names and namespaces of the rolebinding.
+The keys of parameter `rolebindings` are parsed as namespaced names `<namespace>/<name>` and used as names and namespaces of the rolebinding.
 If no namespace is provided the rolebinding is created in the fallback namespace provided in the `namespace` parameter.
-The keys of the `clusterrolebindings` are used as the name of the cluster rolebinding.
+The keys of parameter `clusterrolebindings` are used as the name of the cluster rolebinding.
 
 The values are directly transformed into `RoleBindings` and `ClusterRoleBindings` resources, but there are additonal helper fields to more effectively manage and overwrite rolebindings in the configuration hierarchy.
 
@@ -138,7 +141,7 @@ The `subjects_` field allows easier management of subjects in the rolebinding.
 The field can contain three lists: `serviceaccounts`, `users`, and `groups`.
 For each entry in the lists a corresponding subject is added to the `subjects` field of the rolebinding resource.
 For serviceaccounts you can specify a namespaced name (`namespace/name`).
-If no namespace is specified the component falls back to the rolebinding or default namespace respectively.
+If no namespace is specified, the component falls back to the rolebinding or default namespace respectively.
 Subjects can be removed from each list by prefixing them with a tilde `~`.
 
 
