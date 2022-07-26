@@ -17,6 +17,9 @@ subjects:
     kind: User
     name: buzz
   - kind: ServiceAccount
+    name: buzz
+    namespace: syn-serviceaccounts
+  - kind: ServiceAccount
     name: bar
     namespace: foo
 ---
