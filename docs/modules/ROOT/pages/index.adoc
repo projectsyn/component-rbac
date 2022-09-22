@@ -1,5 +1,5 @@
 = rbac
 
-rbac is a Commodore component to manage rbac.
+This component enables users to define arbitrary ServiceAccounts and RBAC rules through the Project Syn hierarchy.
 
 See the xref:references/parameters.adoc[parameters] reference for further details.
