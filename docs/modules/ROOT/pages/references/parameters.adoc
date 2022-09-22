@@ -32,6 +32,8 @@ The provided values are transformed into `ServiceAccount` resources.
 The keys are parsed as namespaced names `<namespace>/<name>` and used as names and namespaces of the Service Accounts.
 If no namespace is provided the Service Account is created in the fallback namespace provided in the `namespace` parameter.
 
+The component also creates an https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/#manually-create-a-service-account-api-token[API token secret] for each specified service account.
+This ensures that users can fetch a long-lived token associated with the service account on Kubernetes 1.24+.
 
 === Example
 

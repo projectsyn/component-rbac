@@ -88,6 +88,18 @@ local processRoleBinding(rb) = rb {
       },
     }
   ),
+  serviceaccount_tokens: com.generateResources(
+    params.serviceaccounts,
+    function(name) kube.Secret(namespacedName(name).name) {
+      metadata+: {
+        namespace: namespacedName(name).namespace,
+        annotations: {
+          'kubernetes.io/service-account.name': namespacedName(name).name,
+        },
+      },
+      type: 'kubernetes.io/service-account-token',
+    },
+  ),
   clusterRoles: [
     processRole(cr)
     for cr in com.generateResources(params.clusterroles, kube.ClusterRole)
