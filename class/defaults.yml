@@ -5,7 +5,7 @@ parameters:
     namespace: default
     manageNamespace: false
 
-
+    groups: {}
     serviceaccounts: {}
     clusterroles: {}
     clusterrolebindings: {}

@@ -3,6 +3,13 @@ parameters:
     namespace: syn-serviceaccounts
     manageNamespace: true
 
+    groups:
+      some-group:
+        users:
+          - some-user1
+          - some-user2
+          - some-user3
+
     serviceaccounts:
       foo/bar:
         metadata:

@@ -1,0 +1,7 @@
+apiGroup: rbac.authorization.k8s.io
+kind: Group
+name: some-group
+users:
+  - some-user1
+  - some-user2
+  - some-user3

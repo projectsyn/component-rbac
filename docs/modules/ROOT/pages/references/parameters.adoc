@@ -18,6 +18,30 @@ default:: false
 
 Whether to create/manage the fallback namespace.
 
+== `groups`
+
+[horizontal]
+type:: dict
+default:: {}
+
+The `groups` parameter can be used to create arbitrary groups.
+
+Each entry is transformed to a `Group` resource, using the key as the name.
+
+=== Example
+
+[source,yaml]
+----
+rbac:
+  groups:
+    some-group:
+      users:
+        - some-user1
+        - some-user2
+        - some-user3
+----
+
+
 == `serviceaccounts`
 
 [horizontal]
