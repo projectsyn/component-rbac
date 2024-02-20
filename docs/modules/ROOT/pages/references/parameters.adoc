@@ -141,7 +141,7 @@ The keys of parameter `clusterrolebindings` are used as the name of the cluster 
 
 The values are directly transformed into `RoleBindings` and `ClusterRoleBindings` resources, but there are additonal helper fields to more effectively manage and overwrite rolebindings in the configuration hierarchy.
 
-The `role_` and `clusterrole_` field allow you to directly specify the role and clusterrole name respectively as a string, without having to specify `apiGroup` or `kind`.
+The `role_` and `clusterRole_` field allow you to directly specify the role and clusterrole name respectively as a string, without having to specify `apiGroup` or `kind`.
 
 The `subjects_` field allows easier management of subjects in the rolebinding.
 The field can contain three lists: `serviceaccounts`, `users`, and `groups`.
