@@ -1,6 +1,7 @@
 parameters:
   rbac:
-    =_metadata: {}
+    =_metadata:
+      multi_tenant: true
 
     namespace: default
     manageNamespace: false
