@@ -1,0 +1,135 @@
+local esp = import 'espejote.libsonnet';
+local config = import 'lib/espejote-rbac-sync/config.json';
+
+local context = esp.context();
+
+local activePoliciesAnnotation = 'rbac.syn.tools/active-policies';
+
+// Extract the active policy sets from the given namespace object,
+// based on the annotations applied by this ManagedResource.
+local activePolicies(namespace) =
+  local rawSet = std.get(std.get(namespace.metadata, 'annotations', {}), activePoliciesAnnotation, '[]');
+  std.set(std.parseJson(rawSet));
+
+// Extract the desired policy sets from the given namespace object,
+// Returns an empty array if the namespace is in the ignoredNamespaces list.
+// If no policy sets are set by labels, no policy sets are returned.
+// If any policy set labels are set, those are returned.
+//   ignoredNamespaces / no-defaults label -> []
+//   no policy set labels -> [ ]
+//   policy set labels -> [ <policy sets from labels> ]
+local desiredPolicySets(namespace) =
+  local objHasLabel(obj, label) =
+    std.objectHas(std.get(obj.metadata, 'labels', {}), label);
+
+  // Policy sets based on labels starting with params.namespaceSync.labelPrefix.
+  //   labels:
+  //     set.example.io/airlock: ""
+  //     set.example.io/myapp: ""
+  // would return the policy sets `["airlock", "myapp"]`.
+  // The configured prefix is suffixed with a '/' if it does not already end with one.
+  local policySetsFromLabel =
+    local prefix = if std.endsWith(config.labelPrefix, '/') then
+      config.labelPrefix
+    else
+      config.labelPrefix + '/';
+
+    [
+      lbl[std.length(prefix):]
+      for lbl in std.objectFields(std.get(namespace.metadata, 'labels', {}))
+      if std.startsWith(lbl, prefix)
+    ];
+
+  if std.member(config.ignoreNames, namespace.metadata.name) then
+    []
+  else if std.length(std.filter(
+    function(prefix) std.startsWith(namespace.metadata.name, prefix),
+    config.ignorePrefixes
+  )) > 0 then
+    []
+  else if std.length(policySetsFromLabel) > 0 then
+    std.set(policySetsFromLabel)
+  else
+    [];
+
+local isRole(policyName) =
+  std.startsWith(policyName, 'role/');
+local isRoleBinding(policyName) =
+  std.startsWith(policyName, 'rolebinding/');
+
+// Generate policy sets.
+local generatePolicy(policyName, namespace) =
+  config.policies[policyName] {
+    metadata+: {
+      namespace: namespace.metadata.name,
+    },
+  };
+
+local purgePolicy(policyName, namespace) =
+  esp.markForDelete(generatePolicy(policyName, namespace));
+
+// Reconcile the given namespace.
+local reconcileNamespace(namespace) =
+  local desiredPolicies = std.set(std.filter(
+    function(policy) std.get(config.policies, policy) != null,
+    std.flattenArrays([
+      config.policySets[set]
+      for set in desiredPolicySets(namespace)
+      if std.get(config.policySets, set) != null
+    ])
+  ));
+  // Generate array of RBAC policies for the given policy set.
+  [
+    generatePolicy(policy, namespace)
+    for policy in desiredPolicies
+  ]
+  // Generate array of RBAC policies to be deleted for the given policy set.
+  +
+  [
+    purgePolicy(policy, namespace)
+    for policy in std.setDiff(activePolicies(namespace), desiredPolicies)
+  ]
+  // Generate annotation for the given namespace containing the new active policy sets.
+  +
+  [ {
+    apiVersion: 'v1',
+    kind: 'Namespace',
+    metadata: {
+      annotations: {
+        [activePoliciesAnnotation]: std.manifestJsonMinified(desiredPolicies),
+      },
+      name: namespace.metadata.name,
+    },
+  } ];
+
+// check if the object is getting deleted by checking if it has
+// `metadata.deletionTimestamp`.
+local inDelete(obj) = std.get(obj.metadata, 'deletionTimestamp', '') != '';
+
+// Do the thing
+if esp.triggerName() == 'namespace' then (
+  // Handle single namespace update on namespace trigger
+  local nsTrigger = esp.triggerData();
+  // nsTrigger.resource can be null if we're called when the namespace is getting
+  // deleted. If it's not null, we still don't want to do anything when the
+  // namespace is getting deleted.
+  if nsTrigger.resource != null && !inDelete(nsTrigger.resource) then
+    reconcileNamespace(nsTrigger.resource)
+) else if esp.triggerName() == 'role' || esp.triggerName() == 'rolebinding' then (
+  // Handle single namespace update on role or rolebinding trigger
+  local namespace = esp.triggerData().resourceEvent.namespace;
+  std.flattenArrays([
+    reconcileNamespace(ns)
+    for ns in context.namespaces
+    if ns.metadata.name == namespace && !inDelete(ns)
+  ])
+) else (
+  // Reconcile all namespaces for jsonnetlibrary update or managedresource
+  // reconcile.
+  local namespaces = context.namespaces;
+  std.flattenArrays([
+    reconcileNamespace(ns)
+    for ns in namespaces
+    if !inDelete(ns)
+  ])
+)

@@ -1,0 +1,95 @@
+= Using and customizing policies
+
+Whit this component you can define custom policy sets, containing Roles and RoleBindings, that can be applied to namespaces using labels.
+
+== Applying custom policies to a namespace
+
+Custom policy sets can be applied by labeling the namespace with a `set.rbac.syn.tools/<policy-set-name>: ""` label.
+Where `<policy-set-name>` corresponds to the name of the policy set defined in the component configuration.
+The label value is ignored and can be an empty string.
+
+[source,yaml]
+----
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: my-namespace
+  labels:
+    set.rbac.syn.tools/team-devops: "" <1>
+    set.rbac.syn.tools/team-admin: "" <2>
+----
+<1> This applies the custom `team-devops` policy set to the namespace.
+<2> This applies the custom `team-admin` policy sets to the namespace.
+
+== Customizing Policies
+
+Custom policies can be defined in the component configuration using the `namespaceSync.policies` key.
+These policies can then be grouped into policy sets using the `namespaceSync.policySet` key.
+The resulting sets can be applied to namespaces as described above.
+
+[TIP]
+====
+It is allowed to reference the same policy in multiple policy sets.
+Even if more than one of those policy sets are applied to a namespace, the policy will only be created once.
+====
+
+[source,yaml]
+----
+namespaceSync:
+  policies:
+    role/read-configmaps: <1>
+      rules_:
+        read:
+          apiGroups:
+            - ""
+          resources:
+            - configmaps
+          verbs:
+            - get
+            - list
+            - watch
+            - ~delete
+    rolebinding/read-configmaps: <2>
+      role_: read-configmaps
+      subjects_:
+        serviceaccounts:
+          - null/buzz
+          - ~blib
+    rolebinding/namespace-edit:
+      role_: edit
+      subjects_:
+        groups_:
+          - team-devops
+    rolebinding/namespace-admin:
+      role_: admin
+      subjects_:
+        groups_:
+          - team-admin
+  policySets:
+    default:
+      - ~rolebinding/read-configmaps <3>
+    team-devops:
+      - rolebinding/namespace-edit
+    team-admin:
+      - rolebinding/namespace-admin
+----
+<1> Defines a custom Role named `read-configmaps`.
+The parametrization is explained xref:references/parameters.adoc[here].
+<2> Defines a custom RoleBinding `read-configmaps`.
+The parametrization is explained xref:references/parameters.adoc[here].
+<3> Removes the RoleBinding `read-configmaps` from the `default` policy set.
+Sets are rendered with the commodore https://syn.tools/commodore/reference/commodore-libjsonnet.html#_renderarrayarr[`renderArray(arr)`] function and allows removal of array entries using the `~` operator.
+
+A namespace could be labeled as such to apply the `team-devops` and `team-admin` policy sets:
+
+[source,yaml]
+----
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: my-namespace
+  labels:
+    set.network-policies.syn.tools/team-devops: ""
+    set.network-policies.syn.tools/team-admin: ""
+----
+This would apply the `namespace-admin`, and `namespace-edit` RoleBindings to the namespace.
