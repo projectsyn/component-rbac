@@ -1,0 +1,47 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    app.kubernetes.io/name: espejote-rbac-namespacesync
+  name: espejote-rbac-namespacesync
+  namespace: syn-espejote
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/name: espejote-managedresource-rbac-namespacesync
+  name: espejote-managedresource-rbac-namespacesync
+rules:
+  - apiGroups:
+      - ''
+    resources:
+      - namespaces
+    verbs:
+      - get
+      - list
+  - apiGroups:
+      - rbac.authorization.k8s.io
+    resources:
+      - clusterrolebindings
+      - rolebindings
+    verbs:
+      - get
+      - list
+      - patch
+      - create
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  labels:
+    app.kubernetes.io/name: espejote-managedresource-rbac-namespacesync
+  name: espejote-managedresource-rbac-namespacesync
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: espejote-managedresource-rbac-namespacesync
+subjects:
+  - kind: ServiceAccount
+    name: espejote-rbac-namespacesync
+    namespace: syn-espejote

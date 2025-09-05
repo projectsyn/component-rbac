@@ -1,0 +1,18 @@
+apiVersion: espejote.io/v1alpha1
+kind: JsonnetLibrary
+metadata:
+  labels:
+    app.kubernetes.io/name: espejote-rbac-namespacesync
+  name: espejote-rbac-namespacesync
+  namespace: syn-espejote
+spec:
+  data:
+    namespacesyncs_v1.json: |-
+      {
+          "view": {
+              "clusterRoles_": [
+                  "view"
+              ],
+              "labelKey": "clusterrole.sync.vshnmanaged.net/view"
+          }
+      }
