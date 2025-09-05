@@ -6,9 +6,15 @@ parameters:
     namespace: default
     manageNamespace: false
 
-
     serviceaccounts: {}
     clusterroles: {}
     clusterrolebindings: {}
     roles: {}
     rolebindings: {}
+
+    namespacesyncs: {}
+      # [sync_name]:
+      #   labelKey: null     # either use labelKey or namePrefix, but not both
+      #   namePrefix: null   # try labelKey first, only then use namePrefix
+      #   clusterroles: []
+      #   roles: []

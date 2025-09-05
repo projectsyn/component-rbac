@@ -1,0 +1,23 @@
+apiVersion: espejote.io/v1alpha1
+kind: ManagedResource
+metadata:
+  labels:
+    app.kubernetes.io/name: espejote-rbac-namespacesync
+  name: espejote-rbac-namespacesync
+  namespace: syn-espejote
+spec:
+  context:
+    - name: namespace
+      resource:
+        apiVersion: v1
+        kind: Namespace
+  triggers:
+    - name: jslib_rbac
+      watchResource:
+        apiVersion: espejote.io/v1alpha1
+        kind: JsonnetLibrary
+        name: espejote-rbac-namespacesync
+        namespace: syn-espejote
+    - name: namespace
+      watchContextResource:
+        name: namespace
