@@ -1,0 +1,76 @@
+apiVersion: espejote.io/v1alpha1
+kind: JsonnetLibrary
+metadata:
+  labels:
+    app.kubernetes.io/name: espejote-rbac-sync
+  name: espejote-rbac-sync
+  namespace: syn-espejote
+spec:
+  data:
+    config.json: |-
+      {
+          "ignoreNames": [
+
+          ],
+          "ignorePrefixes": [
+
+          ],
+          "labelPrefix": "set.rbac.syn.tools/",
+          "rbacAnnotations": {
+              "syn.tools/source": "https://github.com/projectsyn/component-rbac.git"
+          },
+          "rbacLabels": {
+              "app.kubernetes.io/component": "rbac",
+              "app.kubernetes.io/managed-by": "espejote",
+              "app.kubernetes.io/part-of": "syn"
+          },
+          "templateSets": {
+              "test1": [
+                  "role/read-configmaps",
+                  "rolebinding/read-configmaps"
+              ]
+          },
+          "templates": {
+              "role/read-configmaps": {
+                  "apiVersion": "rbac.authorization.k8s.io/v1",
+                  "kind": "Role",
+                  "metadata": {
+                      "name": "read-configmaps"
+                  },
+                  "rules": [
+                      {
+                          "apiGroups": [
+                              ""
+                          ],
+                          "resources": [
+                              "configmaps"
+                          ],
+                          "verbs": [
+                              "get",
+                              "list",
+                              "watch"
+                          ]
+                      }
+                  ]
+              },
+              "rolebinding/read-configmaps": {
+                  "apiVersion": "rbac.authorization.k8s.io/v1",
+                  "kind": "RoleBinding",
+                  "metadata": {
+                      "name": "read-configmaps"
+                  },
+                  "roleRef": {
+                      "apiGroup": "rbac.authorization.k8s.io",
+                      "kind": "Role",
+                      "name": "read-configmaps"
+                  },
+                  "subjects": [
+                      {
+                          "kind": "ServiceAccount",
+                          "name": "buzz",
+                          "namespace": "null"
+                      }
+                  ]
+              }
+          }
+      }
