@@ -1,4 +1,16 @@
+applications:
+  - espejote
+
 parameters:
+  kapitan:
+    dependencies:
+      - type: https
+        source: https://raw.githubusercontent.com/projectsyn/component-espejote/master/lib/espejote.libsonnet
+        output_path: vendor/lib/espejote.libsonnet
+
+  espejote:
+    namespace: syn-espejote
+
   rbac:
     namespace: syn-serviceaccounts
     manageNamespace: true
@@ -92,3 +104,28 @@ parameters:
           groups:
             - org
             - ~root
+
+    namespaceSync:
+      templates:
+        role/read-configmaps:
+          rules_:
+            read:
+              apiGroups:
+                - ""
+              resources:
+                - configmaps
+              verbs:
+                - get
+                - list
+                - watch
+                - ~delete
+        rolebinding/read-configmaps:
+          role_: read-configmaps
+          subjects_:
+            serviceaccounts:
+              - null/buzz
+              - ~blib
+      templateSets:
+        test1:
+          - role/read-configmaps
+          - rolebinding/read-configmaps

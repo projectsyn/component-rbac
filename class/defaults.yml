@@ -6,9 +6,15 @@ parameters:
     namespace: default
     manageNamespace: false
 
-
     serviceaccounts: {}
     clusterroles: {}
     clusterrolebindings: {}
     roles: {}
     rolebindings: {}
+
+    namespaceSync:
+      ignoreNames: []
+      ignorePrefixes: []
+      labelPrefix: set.rbac.syn.tools/
+      templates: {}
+      templateSets: {}
