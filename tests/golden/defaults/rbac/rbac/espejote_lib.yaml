@@ -13,7 +13,10 @@ spec:
 
           ],
           "ignorePrefixes": [
-
+              "appuio",
+              "kube",
+              "openshift",
+              "syn"
           ],
           "labelPrefix": "set.rbac.syn.tools/",
           "policies": {

@@ -14,7 +14,11 @@ parameters:
 
     namespaceSync:
       ignoreNames: []
-      ignorePrefixes: []
+      ignorePrefixes:
+        - kube
+        - openshift
+        - appuio
+        - syn
       labelPrefix: set.rbac.syn.tools/
       policies: {}
       policySets: {}
