@@ -200,6 +200,68 @@ rbac:
 ----
 
 
+== `namespaceSync`
+
+Configures dynamic Roles and RoleBindings managed by Espejote.
+
+=== `ignoredNames`
+
+[horizontal]
+type:: list of strings
+default:: empty list
+
+A list of namespace names where no Roles or RoleBindings will be created.
+Entries in the list can be removed by adding the entry prefixed with a `~`.
+
+=== `ignoredPrefixes`
+
+[horizontal]
+type:: list of strings
+default:: empty list
+
+A list of namespace name-prefixes where no Roles or RoleBindings will be created.
+Entries in the list can be removed by adding the entry prefixed with a `~`.
+
+=== `labelPrefix` label prefix
+
+[horizontal]
+type:: string
+default:: `set.rbac.syn.tools/`
+
+Custom policy sets can be applied to a namespace by adding a label with this prefix and the name of the policy set as suffix.
+For example, to apply the `team-devops` policy set, add the label `set.rbac.syn.tools/team-devops: ""` to the namespace.
+The label value is ignored and can be an empty string.
+
+=== `policies`
+
+[horizontal]
+type:: dict
+default:: `{}`
+
+Define Roles and RoleBindings to be used by policy sets.
+
+See xref:_roles_clusterroles[Roles / Clusterroles] or xref:_rolebindings_clusterrolebindings[RoleBindings / ClusterRoleBindings] for parametrization.
+
+[NOTE]
+====
+Make sure to use the prefix Roles with `role/` and RoleBindings with `rolebinding/` when defining policies.
+====
+
+Also see xref:how-tos/using-customizing-policies.adoc[].
+
+== `policySets`
+
+[horizontal]
+type:: dict
+default:: `{}`
+
+Define policy sets that can be selected by the label `set.rbac.syn.tools/<policy-set-name>: ""`.
+A policy set is an array of policy names defined in `policies`.
+Names can be removed from the default policy sets by prefixing them with a `~`.
+A policy can be part of multiple policy sets, even if those policy sets are applied to the same namespace.
+
+Also see xref:how-tos/using-customizing-policies.adoc[].
+
 
 == Example
 
