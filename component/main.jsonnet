@@ -33,7 +33,7 @@ local params = inv.parameters.rbac;
     },
   ),
   clusterRoles: [
-    utils.processRole(cr)
+    std.prune(utils.processRole(cr))
     for cr in com.generateResources(params.clusterroles, kube.ClusterRole)
   ],
   clusterRoleBindings: [
@@ -42,7 +42,7 @@ local params = inv.parameters.rbac;
       com.generateResources(params.clusterrolebindings, function(name) kube._Object('rbac.authorization.k8s.io/v1', 'ClusterRoleBinding', name))
   ],
   roles: [
-    utils.processRole(r)
+    std.prune(utils.processRole(r))
     for r in com.generateResources(
       params.roles,
       function(name) kube.Role(utils.namespacedName(name).name) {
