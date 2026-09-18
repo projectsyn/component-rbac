@@ -87,8 +87,8 @@ local jsonnetLibrary = esp.jsonnetLibrary(mrName, espNamespace) {
                         name: suffixToName(policy),
                       },
                     } +
-                    if prefixToKind(policy) == 'Role' then utils.processRole(params.namespaceSync.policies[policy])
-                    else if prefixToKind(policy) == 'RoleBinding' then utils.processRoleBinding(params.namespaceSync.policies[policy])
+                    if prefixToKind(policy) == 'Role' then std.prune(utils.processRole(params.namespaceSync.policies[policy]))
+                    else if prefixToKind(policy) == 'RoleBinding' then std.prune(utils.processRoleBinding(params.namespaceSync.policies[policy]))
                     else {}
           for policy in std.objectFields(params.namespaceSync.policies)
           if params.namespaceSync.policies[policy] != null
